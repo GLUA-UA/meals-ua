@@ -7,6 +7,12 @@ import urllib.request as urllib
 import xmltodict
 import json
 import os
+
+try:
+    import xmltodict
+except ImportError:
+    print("\n Error! Module 'xmltodict' not found! Follow instructions on README.md to install, then run program again.")
+
 os.system('clear')
 
 class bcolors:
