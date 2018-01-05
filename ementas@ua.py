@@ -4,14 +4,14 @@
 # VERSION 1.0
 
 import urllib.request as urllib
-import xmltodict
 import json
-import os
+import os, sys
 
 try:
     import xmltodict
-except ImportError:
-    print("\n Error! Module 'xmltodict' not found! Follow instructions on README.md to install, then run program again.")
+except:
+    print("\n Erro! Módulo 'xmltodict' não encontrado! Siga as instruções no README.md para instalar e volte a correr o programa.\n")
+    sys.exit()
 
 os.system('clear')
 
