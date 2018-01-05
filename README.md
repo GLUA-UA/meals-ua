@@ -1,6 +1,6 @@
 # Ementas@UA
 
-### A simple python script that presents the day's menu at all the University of Aveiro's cantinas.
+### A simple python script that presents the day's menu at all of the University of Aveiro's cantinas.
 
 #### Requirements:
 
@@ -21,7 +21,7 @@ python3 ementas@ua.py
 
 #### Thanks:
 
-This is script is made possible by the University of Aveiro's public API.
+This script is made possible by the University of Aveiro's public API.
 More information about the specific menu API [here](http://api.web.ua.pt/en/services/universidade_de_aveiro/ementas).
 
 #### Screenshot:
