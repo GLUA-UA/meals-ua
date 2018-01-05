@@ -6,7 +6,8 @@
 
 - Python 3
 - xmltodict
-Install via pip:
+
+Install **xmltodict** via pip:
 ```
 pip3 install xmltodict
 ```
