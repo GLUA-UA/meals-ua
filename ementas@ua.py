@@ -6,7 +6,6 @@
 import urllib.request as urllib
 import xmltodict
 import json
-from pprint import pprint
 import os
 os.system('clear')
 
