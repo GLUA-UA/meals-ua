@@ -14,7 +14,7 @@ pip3 install xmltodict
 
 #### Usage:
 
-Just navigate to the dirctory and run:
+Just navigate to the directory and run:
 ```
 python3 ementas@ua.py
 ```
