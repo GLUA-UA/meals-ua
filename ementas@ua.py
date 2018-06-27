@@ -12,6 +12,7 @@ try:
     import xmltodict 
 except:
     print("\n Erro! Módulo 'xmltodict' não encontrado! Siga as instruções no README.md para instalar e volte a correr o programa.\n")
+    print("\n Ou faça sh ./install.sh no diretório deste ficheiro.")
     sys.exit()
 
 os.system('clear') # Clear the terminal screen
@@ -36,13 +37,35 @@ def internet_on():
 
 print(bcolors.OKGREEN + '\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n' + bcolors.ENDC + bcolors.BOLD + '                       Ementas na UA\n' + bcolors.ENDC +  bcolors.OKGREEN + '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n' + bcolors.ENDC)
 print('By Rodrigo Rosmaninho - MIECT - 2018\n')
+print('Updated by André Alves - MIECT - 2018\n')
 
 if not internet_on(): # If there is no internet print errors
     print(bcolors.FAIL + '\n======================== ERRO ========================' + bcolors.ENDC)
     print(bcolors.FAIL + 'Não existe conexão à internet.\nEste script necessita de uma ligação estável à internet para aceder ao API da UA.\n' + bcolors.ENDC)
 
 else:
-    file = urllib.urlopen('http://services.web.ua.pt/sas/ementas') # open the result of the API as a file
+
+    b = False
+    dia = 1
+    while not b:            #Choose between day or week
+        d = input(bcolors.WARNING + "Escolha entre ver a ementa do dia ou da semana (D/W)\n"+bcolors.ENDC)
+        if d == 'D' or d == 'd':
+            dia = 1
+            b = True
+        elif d == 'W' or d == 'w':
+            dia = 0
+            b = True
+        else:
+            print(bcolors.FAIL+"Escolha uma opção válida\n"+bcolors.ENDC)
+            b = False
+
+
+    if dia == 1:
+        file = urllib.urlopen('http://services.web.ua.pt/sas/ementas?date=day') # open the result of the API as a file
+    else:
+        file = urllib.urlopen('http://services.web.ua.pt/sas/ementas?date=week') # open the result of the API as a file
+
+
     data = file.read()
     file.close()
 
@@ -50,10 +73,10 @@ else:
     # Sample data: https://codebeautify.org/jsonviewer/cb6c4994
     data = data['result']['menus']['menu'] # Get to the relevent section of the data. 'menu' is an array of objects, each object matches a meal at a certain canteen
 
-    print(bcolors.WARNING + 'Data' + bcolors.ENDC + ': ' + bcolors.HEADER + bcolors.BOLD + data[0]['@date'][:-15] + '\n' + bcolors.ENDC) # Print current date, as found in the dict
-
     # Iterate through the array of meals
     for i in range(len(data)): 
+        if data[i]['@canteen'] == 'Refeitório de Santiago' and data[i]['@meal'] == 'Almoço':
+            print(bcolors.WARNING + '\n***************** ' + bcolors.HEADER + bcolors.BOLD + '{: ^22}'.format(data[i]['@date'][:-15]) + bcolors.WARNING + ' *****************\n' + bcolors.ENDC) # Prints the day properly formatted. The space between the '=' must be 22 characters.
         if data[i]['@meal'] == 'Almoço': # Each canteen can serve 2 meals (Lunch, Dinner). If the current meal is Lunch, print the name of the canteen
             print(bcolors.OKBLUE + '\n================== ' + '{: ^22}'.format(data[i]['@canteen']) + ' ==================\n' + bcolors.ENDC) # Prints the name of the canteen properly formatted. The space between the '=' must be 22 characters.
 
