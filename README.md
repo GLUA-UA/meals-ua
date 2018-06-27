@@ -5,18 +5,18 @@
 #### Requirements:
 
 - Python 3
-- xmltodict
-
-Install **xmltodict** via pip:
-```
-pip3 install xmltodict
-```
 
 #### Usage:
 
-Just navigate to the directory and run:
+Just navigatename of the canteen to the directory and run:
 ```
-python3 ementas@ua.py
+sh /install.sh
+```
+
+And now you can use it by running:
+
+```
+ementa
 ```
 
 #### Thanks:
@@ -27,3 +27,5 @@ More information about the specific menu API [here](http://api.web.ua.pt/en/serv
 #### Screenshot:
 
 ![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas.png)
+![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas_dia.png)
+![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas_week.png)
