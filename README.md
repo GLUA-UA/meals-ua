@@ -26,6 +26,5 @@ More information about the specific menu API [here](http://api.web.ua.pt/en/serv
 
 #### Screenshot:
 
-![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas.png)
 ![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas_dia.png)
 ![example](https://raw.githubusercontent.com/RodrigoRosmaninho/ementas-ua/master/screenshots/term_ementas_week.png)
