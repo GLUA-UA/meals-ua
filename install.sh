@@ -1,4 +1,10 @@
-sudo pip3 install xmltodict
-sudo cp ./ementas@ua.py $HOME/ementas@ua.py
-sudo echo "alias ementa=\"python3 $HOME/ementas@ua.py\"" >> ~/.bashrc
-sudo echo "alias ementa=\"python3 $HOME/ementas@ua.py\"" >> ~/.zshrc
+sudo pip3 install xmltodict # Install dependency
+CAMINHO=$(pwd)              # Get current path
+# Check if alias already exists
+if ! grep -q "alias ementa=" ~/.bashrc; then
+    # Create alias
+    sudo echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.bashrc
+fi
+if ! grep -q "alias ementa=" ~/.zshrc; then
+    sudo echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.zshrc
+fi
