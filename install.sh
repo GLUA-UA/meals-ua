@@ -16,7 +16,8 @@ if [ -f "$BASHRC" ]; then
         # Create alias
         printf "\n## Ementa UA Script ##\nalias ementa=$COMMAND" >> $BASHRC
     fi
-elif [ -f "$ZSHRC" ]; then
+fi
+if [ -f "$ZSHRC" ]; then
     echo "zshrc found"
 
     if ! grep -q "^alias ementa=" ~/.zshrc; then

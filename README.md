@@ -43,5 +43,6 @@ ementa
 ![help](https://i.imgur.com/dhGf8xV.gif)
 
 #### Thanks:
+- [Luís Silva](https://github.com/LudeeD)
 - [André Alves](https://github.com/andralves717)
 - University of Aveiro's public API. More information about the specific menu API [here](http://api.web.ua.pt/en/services/universidade_de_aveiro/ementas).
