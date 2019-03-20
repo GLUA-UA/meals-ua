@@ -3,6 +3,7 @@ sudo pip3 install xmltodict # Install dependency
 CAMINHO=$(pwd)              # Get current path
 BASHRC="$HOME/.bashrc"
 ZSHRC="$HOME/.zshrc"
+COMMAND="\"python3 $CAMINHO/ementas@ua.py\""
 
 # Check if alias already exists
 
@@ -13,13 +14,13 @@ if [ -f "$BASHRC" ]; then
 
     if ! grep -q "^alias ementa=" "$BASHRC"; then
         # Create alias
-        echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.bashrc
+        printf "\n## Ementa UA Script ##\nalias ementa=$COMMAND" >> $BASHRC
     fi
 elif [ -f "$ZSHRC" ]; then
     echo "zshrc found"
 
     if ! grep -q "^alias ementa=" ~/.zshrc; then
-        echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.zshrc
+        # Create alias
+        printf "\n## Ementa UA Script ##\nalias ementa=$COMMAND" >> $ZSHRC
     fi
-
 fi
