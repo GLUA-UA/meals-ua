@@ -11,14 +11,14 @@ ZSHRC="$HOME/.zshrc"
 if [ -f "$BASHRC" ]; then
     echo "bashrc found"
 
-    if ! grep -q "alias ementa=" "$BASHRC"; then
+    if ! grep -q "^alias ementa=" "$BASHRC"; then
         # Create alias
         echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.bashrc
     fi
 elif [ -f "$ZSHRC" ]; then
     echo "zshrc found"
 
-    if ! grep -q "alias ementa=" ~/.zshrc; then
+    if ! grep -q "^alias ementa=" ~/.zshrc; then
         echo "alias ementa=\"python3 $CAMINHO/ementas@ua.py\"" >> ~/.zshrc
     fi
 
