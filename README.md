@@ -1,13 +1,16 @@
-# Ementas@UA
+# Meals@UA
 
-### A simple python script that presents the menus at all of the University of Aveiro's canteens.
+### A python script that presents the menus at all of the University of Aveiro's canteens.
 
 ![example](https://i.imgur.com/wy4iPez.png)
 
 #### Requirements:
 
 - Python 3
-- [xmltodict](https://pypi.org/project/xmltodict/) (installed automatically by [install.sh](https://github.com/RodrigoRosmaninho/ementas-ua/blob/master/install.sh))
+- Additional pip libraries installed automatically by [install.sh](https://github.com/RodrigoRosmaninho/ementas-ua/blob/master/install.sh) or by running:
+```
+pip3 install -r requirements.txt
+```
 
 By default, the script presents the menus of the current day at the 3 canteens located on the main campus.
 
@@ -44,5 +47,9 @@ ementa
 
 #### Thanks:
 - [Luís Silva](https://github.com/LudeeD)
-- [André Alves](https://github.com/andralves717)
 - University of Aveiro's public API. More information about the specific menu API [here](http://api.web.ua.pt/en/services/universidade_de_aveiro/ementas).
+
+
+#### Contributing:
+GLUA welcomes pull requests from the community.
+This section will soon be expanded

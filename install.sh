@@ -1,9 +1,9 @@
-sudo pip3 install xmltodict # Install dependency
-
 CAMINHO=$(pwd)              # Get current path
 BASHRC="$HOME/.bashrc"
 ZSHRC="$HOME/.zshrc"
-COMMAND="\"python3 $CAMINHO/ementas@ua.py\""
+COMMAND="\"python3 $CAMINHO/meals-ua.py\""
+
+sudo pip3 install -r $CAMINHO/requirements.txt # Install dependencies
 
 # Check if alias already exists
 

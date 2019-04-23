@@ -1,7 +1,18 @@
-# Rodrigo Rosmaninho - MIECT / Universidade de Aveiro - 2018
+# GLUA - Grupo de Linux da Universidade de Aveiro - 2019
+# Visit https://glua.ua.pt or https://www.facebook.com/glua.ua/ for more information about us
 # https://github.com/RodrigoRosmaninho/ementas-ua
 
-# VERSION 2
+# Developed mainly by GLUA members:
+# - Rodrigo Rosmaninho
+# - Leonardo Costa
+# - André Alves
+
+# Helped by pull requests from:
+# - Luís Silva
+
+# Made possible by the University of Aveiro's public API
+
+# VERSION 3
 
 # Necessary imports
 import urllib.request as urllib
@@ -9,6 +20,7 @@ import sys, os
 import argparse
 import json
 from os.path import expanduser
+from datetime import datetime
 
 # Get home directory. Works both on Linux and Windows
 home = expanduser("~")
@@ -23,8 +35,10 @@ class bcolors:  # Define colors
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# See delete_last_prints()
+CURSOR_UP_ONE = '\x1b[1A'
+ERASE_LINE = '\x1b[2K'
 
-global parser
 # Instantiate the parser
 parser = argparse.ArgumentParser(
     description="Script simples em python que apresenta os menus do dia (ou semana) em todos os refeitórios da Universidade de Aveiro")
@@ -51,7 +65,7 @@ def save_config_file():
     file.write(json.dumps(json_data))
 
 # Show Tutorial
-def initial_screen():
+def show_tutorial():
     print(bcolors.OKGREEN + '************************* Tutorial *************************' + bcolors.ENDC)
     print("Bem vindo. Este tutorial apenas aparecerá uma vez.")
     print("Este script serve para conseguir facilmente consultar as ementas dos vários refeitórios da Universidade de Aveiro.")
@@ -75,13 +89,13 @@ def check_config():
         if 'skip_tutorial' in data:
             if not data['skip_tutorial']:
                 save_config_file()
-                initial_screen()
+                show_tutorial()
         else:
             save_config_file()
-            initial_screen()
+            show_tutorial()
     else:
         save_config_file()
-        initial_screen()
+        show_tutorial()
 
 # Determine whether there is internet access, return boolean
 def internet_on():
@@ -90,6 +104,13 @@ def internet_on():
         return True
     except urllib.URLError as err:
         return False
+
+# Deletes last x prints (x = number)
+def delete_last_prints(number):
+    for _ in range(number):
+        sys.stdout.write(CURSOR_UP_ONE)
+        sys.stdout.write(ERASE_LINE)
+
 
 # Handle an error that happens when there is no meal data for a given place (happens a lot with ESAN)
 def handle_key_error(displayZone):
@@ -105,20 +126,8 @@ def handle_key_error(displayZone):
     print(bcolors.WARNING + "De momento não há informações sobre a ementa " + place + "!" + bcolors.ENDC + "\n")
     sys.exit()
 
-def main():
-    print(bcolors.OKGREEN + '\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n' + bcolors.ENDC + bcolors.BOLD +
-        '                       Ementas na UA\n' + bcolors.ENDC + bcolors.OKGREEN + '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' + bcolors.ENDC)
-    print('By Rodrigo Rosmaninho & André Alves - MIECT - 2018\n')
-
-    # Get arguments
-    args = parser.parse_args()
-
-    if args.showTutorial:
-        initial_screen()
-        sys.exit()
-
-    check_config()  
-
+# Query UA API for meal information and print it on the CLI
+def query_UA_API(place, date):
     # Try to import xmltodict. If the module is not found, print an error and quit program
     try:
         import xmltodict
@@ -127,27 +136,7 @@ def main():
         print("Ou faça sh ./install.sh no diretório deste ficheiro.")
         sys.exit()
 
-    if not internet_on():  # If there is no internet print errors
-        print(bcolors.FAIL +
-            '=========================== ERRO ===========================' + bcolors.ENDC)
-        print(bcolors.FAIL + 'Não existe conexão à internet.\nEste script necessita de uma ligação estável à internet para aceder ao API da UA.\n' + bcolors.ENDC)
-
-    else:
-        
-        if args.showWeek:
-            date = "week"
-        else:
-            date = "day"
-
-        if args.displayZone == [2]:
-            place="ESTGA"
-        elif args.displayZone == [3]:
-            place = "rest"
-        elif args.displayZone == [4]:
-            place = "ESAN"
-        else:
-            place = "santiago"
-
+    try:
         file = urllib.urlopen('http://services.web.ua.pt/sas/ementas?date=' + date + '&place=' + place) # open the result of the API as a file
 
         response = file.read()
@@ -187,6 +176,103 @@ def main():
                 print(bcolors.FAIL + data[i]['@disabled'] + bcolors.ENDC) # If the meal is 'disabled', print the disable message included in the data
         
             print()
+
+    except:
+        # Error has occured, print error message
+        print(bcolors.FAIL + "Ocorreu um erro ao obter a informação das ementas na UA!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC)
+
+
+# Scrap and print data from AFUAv's facebook page, where they regularly post the menu 
+def query_AFUAv(hour):
+    from lxml import etree, html
+    import requests
+
+    print(bcolors.OKBLUE + '================== ' + '{: ^22}'.format("AFUAv") + ' ==================\n' + bcolors.ENDC) # Prints the name of the canteen properly formatted. The space between the '=' must be 22 characters.
+
+    print(bcolors.WARNING + "A obter os dados da página do facebook. Por favor aguarde..." + bcolors.ENDC)
+    
+    try: 
+        f = requests.get('https://www.facebook.com/AFUAv-1411897009022037/', headers={'Connection':'close'})
+        # Parse etree from html string
+        doc = html.fromstring(f.content)
+        # Filter by post
+        posts = doc.xpath('//div[contains(@class, "userContentWrapper")]')
+        ignore = ['Boa', 'Bom', 'Hoje', 'Ficamos', 'Ver', '...', '🍽️']
+        for p in posts:
+            # Convert utc timestamp to datetime object
+            t = datetime.utcfromtimestamp(int(p.xpath('.//@data-utime')[0]))
+            view = None
+            if hour >= t.hour and ((t.hour in [11, 12] and hour < 14) or (t.hour in [18, 19] and hour < 22)):
+                show = True
+            else:
+                show = True
+            if show:
+                view = ''
+                # Get all text in the post
+                meal = p.xpath(
+                    './/div[@class="text_exposed_root"]//*[self::p or self::span]/text()')
+                for m in meal:
+                    # Show only dishes
+                    if not any(sub in m for sub in ignore) and m != ' ':
+                        view += m.strip() + '\n'
+                
+                # Delete standby print and print final result
+                delete_last_prints(1)
+                print(bcolors.WARNING + "Pratos disponíveis" + bcolors.ENDC + ":")
+                print(bcolors.BOLD + view + bcolors.ENDC, end="")
+                break
+            else:
+                continue
+    except:
+        # Error has occured, likely related to the request
+        # Delete standby print and print error message
+        delete_last_prints(1)
+        print(bcolors.FAIL + "Ocorreu um erro ao obter a informação da página do facebook da AFUAv!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC)
+
+def main():
+    print(bcolors.OKGREEN + '\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n' + bcolors.ENDC + bcolors.BOLD +
+        '                       Ementas na UA\n' + bcolors.ENDC + bcolors.OKGREEN + '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' + bcolors.ENDC)
+    print('By GLUA - Grupo de Linux da Universidade de Aveiro\n')
+
+    # Get arguments
+    global args
+    args = parser.parse_args()
+
+    if args.showTutorial:
+        initial_screen()
+        sys.exit()
+
+    check_config()  
+
+    if not internet_on():  # If there is no internet print errors
+        print(bcolors.FAIL +
+            '=========================== ERRO ===========================' + bcolors.ENDC)
+        print(bcolors.FAIL + 'Não existe conexão à internet.\nEste script necessita de uma ligação estável à internet para aceder ao API da UA.\n' + bcolors.ENDC)
+
+    else:
+        
+        if args.showWeek:
+            date = "week"
+        else:
+            date = "day"
+
+        if args.displayZone == [2]:
+            place="ESTGA"
+        elif args.displayZone == [3]:
+            place = "rest"
+        elif args.displayZone == [4]:
+            place = "ESAN"
+        else:
+            # UA's Main Campus
+            place = "santiago"
+
+        # Query and print UA API data for selected location and time period
+        query_UA_API(place, date)
+
+        # Query and print AFUAv data (only for UA's main campus and for the same day)
+        if(place == "santiago" and date == "day"):
+            now = datetime.now().hour
+            query_AFUAv(now)
 
         print(bcolors.UNDERLINE + '\nBom Apetite!\n' + bcolors.ENDC)
 
