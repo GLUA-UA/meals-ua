@@ -1,13 +1,14 @@
 # Meals@UA
 
 ### A python script that presents the menus at all of the University of Aveiro's canteens.
+Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua)
 
-![example](https://i.imgur.com/wy4iPez.png)
+![example](https://i.imgur.com/nPc9E1c.png)
 
 #### Requirements:
 
 - Python 3
-- Additional pip libraries installed automatically by [install.sh](https://github.com/RodrigoRosmaninho/ementas-ua/blob/master/install.sh) or by running:
+- Additional pip libraries installed automatically by [install.sh](https://github.com/GLUA-UA/meals-ua/blob/master/install.sh) or by running:
 ```
 pip3 install -r requirements.txt
 ```
@@ -42,8 +43,8 @@ ementa
            
 
 ##### Examples:
-![loc](https://i.imgur.com/1BqHLA5.gif)
-![help](https://i.imgur.com/dhGf8xV.gif)
+![loc](https://i.imgur.com/CVeWxIE.gif)
+![help](https://i.imgur.com/7nbEmkl.gif)
 
 #### Thanks:
 - [Luís Silva](https://github.com/LudeeD)

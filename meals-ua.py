@@ -1,6 +1,6 @@
 # GLUA - Grupo de Linux da Universidade de Aveiro - 2019
 # Visit https://glua.ua.pt or https://www.facebook.com/glua.ua/ for more information about us
-# https://github.com/RodrigoRosmaninho/ementas-ua
+# https://github.com/GLUA-UA/meals-ua
 
 # Developed mainly by GLUA members:
 # - Rodrigo Rosmaninho
