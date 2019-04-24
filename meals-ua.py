@@ -69,13 +69,13 @@ def show_tutorial():
     print(bcolors.OKGREEN + '************************* Tutorial *************************' + bcolors.ENDC)
     print("Bem vindo. Este tutorial apenas aparecerá uma vez.")
     print("Este script serve para conseguir facilmente consultar as ementas dos vários refeitórios da Universidade de Aveiro.")
-    print("Por defeito, são apresentadas as ementas do dia atual nos refeitórios do campus da UA (Santiago, Crasto, e Snack)")
+    print("Por omissão, são apresentadas as ementas do dia atual nos refeitórios do campus da UA (Santiago, Crasto, e Snack)")
     print("No entanto, pode utilizar o parâmetro " + bcolors.BOLD + "-w" + bcolors.ENDC + " para visualizar as ementas de toda a semana e o parâmetro " + bcolors.BOLD + "-l" + bcolors.ENDC + " para especificar o local a consultar, sendo que:")
     print(" " + bcolors.BOLD + "-l 1" + bcolors.ENDC + " devolve as ementas no Campus\n " + bcolors.BOLD + "-l 2" + bcolors.ENDC + " devolve as ementas na ESTGA\n " + bcolors.BOLD + "-l 3" + bcolors.ENDC + " devolve as ementas no Restaurante Universitário\n " + bcolors.BOLD + "-l 4" + bcolors.ENDC + " devolve as ementas na ESAN")
     print("É possível conjugar ambos os parâmetros. Por exemplo, " + bcolors.BOLD + "ementa -w -l 2" + bcolors.ENDC + " devolve todas as ementas da semana correnta na ESTGA")
     print("\nSe ainda não o fez, deveria correr o script 'install.sh' incluído neste diretório.\nDesta forma, poderá executar o programa de forma fácil e sem ter de navegar até ao diretório para onde o descarregou.")
     print("Para o fazer, execute os seguintes comandos:" + bcolors.WARNING + "\nchmod +x install.sh\n./install.sh" + bcolors.ENDC)
-    print("\nEste software é open-source e o código pode ser consultado em: " + bcolors.OKBLUE + "https://github.com/RodrigoRosmaninho/ementas-ua" + bcolors.ENDC)
+    print("\nEste software é open-source e o código pode ser consultado em: " + bcolors.OKBLUE + "https://github.com/GLUA-UA/meals-ua" + bcolors.ENDC)
     print("Se encontrar algum problema, por favor crie um issue nessa página, para que este possa ser rapidamente resolvido.")
     print("\nPara consultar novamente este tutorial pode usar o parâmetro " + bcolors.BOLD + "-t" + bcolors.ENDC + "")
     print("Para apresentar a página de ajuda pode usar o parâmetro " + bcolors.BOLD + "-h" + bcolors.ENDC + " ou " + bcolors.BOLD + "--help" + bcolors.ENDC + "")
@@ -239,7 +239,7 @@ def main():
     args = parser.parse_args()
 
     if args.showTutorial:
-        initial_screen()
+        show_tutorial()
         sys.exit()
 
     check_config()  

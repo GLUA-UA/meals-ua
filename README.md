@@ -1,10 +1,10 @@
 # Meals@UA
 
 ### A python script that presents the menus at all of the University of Aveiro's canteens.
-Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua)
 
 ![example](https://i.imgur.com/nPc9E1c.png)
 
+Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua)
 #### Requirements:
 
 - Python 3
