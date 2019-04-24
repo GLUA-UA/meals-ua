@@ -14,14 +14,14 @@ if [ -f "$BASHRC" ]; then
 
     if ! grep -q "^alias ementa=" "$BASHRC"; then
         # Create alias
-        printf "\n## Ementa UA Script ##\nalias ementa=$COMMAND" >> $BASHRC
+        printf "\n## Meals@UA Script ##\nalias ementa=$COMMAND" >> $BASHRC
     fi
 fi
 if [ -f "$ZSHRC" ]; then
     echo "zshrc found"
 
-    if ! grep -q "^alias ementa=" ~/.zshrc; then
+    if ! grep -q "^alias ementa=" ~/.zshrc ; then
         # Create alias
-        printf "\n## Ementa UA Script ##\nalias ementa=$COMMAND" >> $ZSHRC
+        printf "\n## Meals@UA Script ##\nalias ementa=$COMMAND" >> $ZSHRC
     fi
 fi

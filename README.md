@@ -20,7 +20,7 @@ You can, however, use additional arguments such as **-w** or **-l** to show menu
 
 After cloning this repository, navigate to its directory, and run:
 ```
-sh /install.sh
+sh ./install.sh
 ```
 Which makes sure **xmltodict** is installed and creates the relevant aliases in **.bashrc** and **.zshrc**
 
@@ -37,7 +37,7 @@ ementa
 | -h, --help  | Show help message                  |
 | -w          | Present menus for the current week |
 | -t          | Present the initial tutorial       |
-| -l number   | Specify canteens to present:<br>1 - Campus (Santiago, Crasto, and Snack)<br>2 - ESTGA<br>3 - University Restaurant<br>4 - ESAN |
+| -l number   | Specify canteens to present:<br>1 - Campus (Santiago, Crasto, Snack, and AFUAv)<br>2 - ESTGA<br>3 - University Restaurant<br>4 - ESAN |
 
            
 

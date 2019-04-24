@@ -54,7 +54,7 @@ parser.add_argument('-t', action='store_true', default=False, dest='showTutorial
 # Specifies which zone to display results from
 parser.add_argument('-l', type=int, nargs=1, dest='displayZone',
                     default=1,
-                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, e Snack), 2 - ESTGA, 3 - Restaurante Universitário, 4 - ESAN',
+                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, Snack, e AFUAv), 2 - ESTGA, 3 - Restaurante Universitário, 4 - ESAN',
                     )
 
 # Save JSON config file on the user's home directory
