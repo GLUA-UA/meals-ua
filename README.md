@@ -21,7 +21,7 @@ You can, however, use additional arguments such as **-w** or **-l** to show menu
 
 After cloning this repository, navigate to its directory, and run:
 ```
-sh ./install.sh
+./install.sh
 ```
 Which makes sure **xmltodict** is installed and creates the relevant aliases in **.bashrc** and **.zshrc**
 
