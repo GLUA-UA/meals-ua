@@ -220,6 +220,9 @@ def query_AFUAv(hour):
                 
                 # Delete standby print and print final result
                 delete_last_prints(1)
+                time_of_day = "Almoço" if t.hour in range(8, 15) else "Jantar"
+                print(bcolors.UNDERLINE + time_of_day + bcolors.ENDC)
+                print(f"(Post a {t.day}/{t.month} às {t.hour}h{t.minute})\n")
                 print(bcolors.WARNING + "Pratos disponíveis" + bcolors.ENDC + ":")
                 print(bcolors.BOLD + view + bcolors.ENDC, end="")
                 break
