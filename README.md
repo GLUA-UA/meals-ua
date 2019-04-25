@@ -2,9 +2,9 @@
 
 ### A python script that presents the menus at all of the University of Aveiro's canteens.
 
-![example](https://i.imgur.com/nPc9E1c.png)
+![example](https://i.imgur.com/B0glhF6.png)
 
-Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua)
+Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua) and [this repository](https://github.com/tuxPT/ua-meals-script).
 #### Requirements:
 
 - Python 3
@@ -23,12 +23,12 @@ After cloning this repository, navigate to its directory, and run:
 ```
 ./install.sh
 ```
-Which makes sure **xmltodict** is installed and creates the relevant aliases in **.bashrc** and **.zshrc**
+Which installs the necessary dependencies and places a symlink in **$HOME/.local/bin**
 
 Now you can use the script by running:
 
 ```
-ementa
+ementas
 ```
 
 ##### Optional arguments:
