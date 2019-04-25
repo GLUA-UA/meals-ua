@@ -10,7 +10,7 @@ Migrated from [this repository](https://github.com/RodrigoRosmaninho/ementas-ua)
 - Python 3
 - Additional pip libraries installed automatically by [install.sh](https://github.com/GLUA-UA/meals-ua/blob/master/install.sh) or by running:
 ```
-pip3 install -r requirements.txt
+pip3 install --user -r requirements.txt
 ```
 
 By default, the script presents the menus of the current day at the 3 canteens located on the main campus.
