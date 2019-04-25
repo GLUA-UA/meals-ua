@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # GLUA - Grupo de Linux da Universidade de Aveiro - 2019
 # Visit https://glua.ua.pt or https://www.facebook.com/glua.ua/ for more information about us
 # https://github.com/GLUA-UA/meals-ua

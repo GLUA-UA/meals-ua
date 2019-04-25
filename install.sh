@@ -1,27 +1,15 @@
-CAMINHO=$(pwd)              # Get current path
-BASHRC="$HOME/.bashrc"
-ZSHRC="$HOME/.zshrc"
-COMMAND="\"python3 $CAMINHO/meals-ua.py\""
+#!/usr/bin/env sh
 
-sudo pip3 install -r $CAMINHO/requirements.txt # Install dependencies
-
-# Check if alias already exists
-
-# Check Configuration file
-# Either bashrc or zshrc
-if [ -f "$BASHRC" ]; then
-    echo "bashrc found"
-
-    if ! grep -q "^alias ementa=" "$BASHRC"; then
-        # Create alias
-        printf "\n## Meals@UA Script ##\nalias ementa=$COMMAND" >> $BASHRC
-    fi
+if [ "$1" = "-v" ]; then
+  set -x
 fi
-if [ -f "$ZSHRC" ]; then
-    echo "zshrc found"
 
-    if ! grep -q "^alias ementa=" ~/.zshrc ; then
-        # Create alias
-        printf "\n## Meals@UA Script ##\nalias ementa=$COMMAND" >> $ZSHRC
-    fi
-fi
+## Install Python dependencies
+pip3 install --user -r requirements.txt # Install dependencies
+
+## Default install path in systemd file-hierarchy spec
+INSTALL_DIR="$HOME/.local/bin"
+
+mkdir -p $INSTALL_DIR
+
+ln -s $(pwd)/meals-ua.py ${INSTALL_DIR}/ementas
