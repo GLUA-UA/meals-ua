@@ -1,9 +1,7 @@
 #!/usr/bin/env sh
 
 ## print commands (debug mode)
-if [ "$1" = "-v" ]; then
-  set -x
-fi
+[ "$1" = "-v" ] && set -x
 
 ## Default install path in systemd file-hierarchy spec
 INSTALL_DIR="$HOME/.local/bin"
@@ -19,8 +17,12 @@ if [[ ${PATH} != *"${HOME}/.local/bin"* ]]; then
 else
   ## Install Python dependencies
   pip3 install --user -r requirements.txt # Install dependencies
-
+    
   chmod +x meals-ua.py
+  
+  ## Verify if is already exists and removes if true.
+  [ -f ${INSTALL_DIR}/ementas ] && rm -f ${INSTALL_DIR}/ementas 
 
-  ln -s $(pwd)/meals-ua.py ${INSTALL_DIR}/ementas
+  cp $(pwd)/meals-ua.py ${INSTALL_DIR}/ementas 
+
 fi
