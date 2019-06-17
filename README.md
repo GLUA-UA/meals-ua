@@ -23,7 +23,7 @@ After cloning this repository, navigate to its directory, and run:
 ```
 ./install.sh
 ```
-Which installs the necessary dependencies and places a symlink in **$HOME/.local/bin**
+Which installs the necessary dependencies and places a copy of `meals-ua.py` in **$HOME/.local/bin** with the name `ementas`
 
 Now you can use the script by running:
 
