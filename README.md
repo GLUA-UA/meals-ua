@@ -1,6 +1,6 @@
 # Meals@UA
 
-### A python script that presents the menus at all of the University of Aveiro's canteens.
+### A python script that presents the menus at all of the University of Aveiro's canteens :P .
 
 ![example](https://i.imgur.com/B0glhF6.png)
 
