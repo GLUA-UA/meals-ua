@@ -17,10 +17,10 @@ if [[ ${PATH} != *"${HOME}/.local/bin"* ]]; then
 	echo "PATH DEFAULT=\${PATH}:/home/@{PAM_USER}/.local/bin" >> $HOME/.pam_environment
   echo "Relog and the rerun ./install.sh"
 else
-  ## Install Python dependencies
-  pip3 install --user -r requirements.txt # Install dependencies
+	## install python dependencies from remote requirements.txt
+	wget -O - https://raw.githubusercontent.com/GLUA-UA/meals-ua/master/requirements.txt | xargs pip3 install --user 
 
-  chmod +x meals-ua.py
-
-  ln -s $(pwd)/meals-ua.py ${INSTALL_DIR}/ementas
+	## get the ementas script and set permissions
+	wget https://raw.githubusercontent.com/GLUA-UA/meals-ua/master/meals-ua.py -O $HOME/.local/bin/ementas
+	chmod +x $HOME/.local/bin/ementas
 fi
