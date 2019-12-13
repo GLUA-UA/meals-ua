@@ -19,9 +19,9 @@ You can, however, use additional arguments such as **-w** or **-l** to show menu
 
 #### Usage:
 
-After cloning this repository, navigate to its directory, and run:
+To setup everything, just run:
 ```
-./install.sh
+wget https://raw.githubusercontent.com/GLUA-UA/meals-ua/master/install.sh -O - | sh
 ```
 Which installs the necessary dependencies and places a symlink in **$HOME/.local/bin**
 
