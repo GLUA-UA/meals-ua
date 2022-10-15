@@ -1,8 +1,8 @@
 xmltodict
 certifi==2018.11.29
-chardet==3.0.4
-idna==2.8
-lxml==4.3.0
-requests==2.21.0
+chardet==5.0.0
+idna==3.4
+lxml==4.9.1
+requests==2.28.1
 urllib3>=1.24.2
 bs4==0.0.1
