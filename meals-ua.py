@@ -22,7 +22,8 @@ import sys, os
 import argparse
 import json
 from os.path import expanduser
-from datetime import datetime
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
 
 # Get home directory. Works both on Linux and Windows
 home = expanduser("~")
@@ -147,10 +148,10 @@ def query_UA_API(place, date):
         response = xmltodict.parse(response) # Use xmltodict module to parse data from XML to a Python Dict
         # Sample data: https://codebeautify.org/jsonviewer/cb6c4994
 
-        try:
-            response = response['result']['menus']['menu'] # Get to the relevent section of the data. 'menu' is an array of objects, each object matches a meal at a certain canteen
-        except KeyError:
-            handle_key_error(args.displayZone)
+        # try:
+        #     response = response['result']['menus']['menu'] # Get to the relevent section of the data. 'menu' is an array of objects, each object matches a meal at a certain canteen
+        # except KeyError:
+        #     handle_key_error(args.displayZone)
 
         data = response
         if not isinstance(response, list):
@@ -180,9 +181,176 @@ def query_UA_API(place, date):
             print()
 
     except:
-        # Error has occured, print error message
-        print(bcolors.FAIL + "Ocorreu um erro ao obter a informação das ementas na UA!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC)
+        try:
+            query_CMS(place, date)
+        except:
+            # Error has occured, print error message
+            print(bcolors.FAIL + "Ocorreu um erro ao obter a informação das ementas na UA!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC)
 
+# Scrap CMS website for meal information and print it on the CLI
+def query_CMS(place, date):
+    file = urllib.urlopen('https://cms.ua.pt/ementas/')
+    response = file.read()
+    file.close()
+
+    soup = BeautifulSoup(response, 'html.parser')
+
+    # Get the table with the meal data div class view-content
+    table = soup.find('div', {'class': 'view-content'})
+
+    if table is None:
+        handle_key_error(args.displayZone)
+
+    # Get all the canteens of the table
+    canteens = table.find_all('table', {'class': 'tabelahead views-table cols-3 tablesaw tablesaw-stack'})
+
+    menu = {}
+
+    # Loop through all the canteens
+    for canteen in canteens:
+        # Get the caption of the table (the name of the canteen)
+        caption = canteen.find('caption').text.split(': ')[1]
+
+        # Get the meals of the canteen
+        meals = canteen.find_all('tr')
+
+        # Filter the first meal (the header of the table)
+        meals = meals[1:]
+
+        menu[caption] = {}
+
+        # Loop through all the meals
+        for meal in meals:
+            # Get the meal header
+            header = meal.find('td', {'class': 'views-field views-field-title'}).text
+            header = header.strip().split(' ')
+
+            # Get the meal date and whether it is lunch or dinner
+            lunchOrDinner = header[0]
+            meal_date = header[-1]
+
+            if meal_date not in menu[caption]:
+                menu[caption][meal_date] = {}
+
+            # Get the meal options if it isn't specified whether it is lunch or dinner
+            if lunchOrDinner != 'Almoço' and lunchOrDinner != 'Jantar':
+                # Get the meal options
+                meal_name = meal.find('td', {'class': 'views-field views-field-body'})
+                items = meal_name.find_all('p')
+
+                if "Almoço" not in menu[caption][meal_date]:
+                    menu[caption][meal_date]["Almoço"] = {}
+
+                if "Jantar" not in menu[caption][meal_date]:
+                    menu[caption][meal_date]["Jantar"] = {}
+
+                if "Almoço" not in items[0].text:
+                    continue
+
+                lunch = True
+
+                # Loop through all the meal options
+                for item in items:
+                    if "Jantar" in item.text:
+                        lunch = False
+
+                    if "Almoço" in item.text or "Jantar" in item.text or item.text.rstrip() == "":
+                        continue
+
+                    plate = item.text.strip().replace(u'\xa0', u' ')
+
+                    if plate == "":
+                        continue
+
+                    plate_name, plate_description = parse_plate(plate)
+                    menu[caption][meal_date]["Almoço" if lunch else "Jantar"][plate_name] = plate_description
+
+                continue
+
+            # Get the meal options
+            meal_name = meal.find('td', {'class': 'views-field views-field-body'})
+            items = meal_name.find_all('p')
+
+            if lunchOrDinner not in menu[caption][meal_date]:
+                menu[caption][meal_date][lunchOrDinner] = {}
+
+            # Loop through all the meal options
+            for plate in items:
+                plate = plate.text.strip().replace(u'\xa0', u' ')
+
+                if plate == '':
+                    continue
+
+                # Get the name and description of the meal option
+                plate_name, plate_description = parse_plate(plate)
+
+                # Add the meal option to the menu
+                menu[caption][meal_date][lunchOrDinner][plate_name] = plate_description
+
+    printCanteens = []
+    printDates = []
+
+    # Print the menu
+    if place == 'santiago':
+        printCanteens.append('Santiago')
+        printCanteens.append('Crasto')
+        printCanteens.append('Grelhados')
+    elif place == 'estga':
+        printCanteens.append('ESTGA')
+    elif place == 'rest': 
+        printCanteens.append('Restaurante Universitário')
+
+    if date == 'day':
+        # Get the current date
+        now = datetime.now().strftime('%d/%m/%Y')
+        printDates.append(now)
+    elif date == 'week':
+        # Get all the dates of the current week
+        now = datetime.now()
+        
+        start = now - timedelta(days=now.weekday())
+        end = start + timedelta(days=6)
+
+        for i in range((end - start).days + 1):
+            printDates.append((start + timedelta(days=i)).strftime('%d/%m/%Y'))
+
+    # Loop through all the canteens
+    for canteen in menu:
+        # Check if the canteen is one of the canteens to be printed
+        if canteen not in printCanteens:
+            continue
+
+        # Loop through all the dates
+        for meal_date in menu[canteen]:
+            # Check if the date is one of the dates to be printed
+            if meal_date not in printDates:
+                continue
+
+            print(bcolors.WARNING + '****************** ' + bcolors.HEADER + bcolors.BOLD + '{: ^22}'.format(meal_date) + bcolors.WARNING + ' ******************\n' + bcolors.ENDC)
+            print(bcolors.OKBLUE + '================== ' + '{: ^22}'.format(canteen) + ' ==================\n' + bcolors.ENDC)
+
+            # Loop through all the meals
+            for meal in menu[canteen][meal_date]:
+                print(bcolors.UNDERLINE + meal + '\n' + bcolors.ENDC) # Print what meal it is, i.e. Lunch or Dinner
+
+                # Loop through all the meal options
+                for plate in menu[canteen][meal_date][meal]:
+                    print(bcolors.WARNING + plate + bcolors.ENDC + ': ' + bcolors.BOLD +  menu[canteen][meal_date][meal][plate] + bcolors.ENDC)
+
+                print()
+
+# Parse the meal option name and description
+def parse_plate(plate):
+    if '-' in plate:
+        meal = plate.split(' - ')
+        
+        name = meal[0]
+        description = meal[-1]
+    else:
+        name = plate.split(' ')[0]
+        description = plate
+
+    return name, description
 
 # Scrap and print data from AFUAv's facebook page, where they regularly post the menu 
 def query_AFUAv(hour):
