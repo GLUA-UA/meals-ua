@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# GLUA - Grupo de Linux da Universidade de Aveiro - 2019
+# GLUA - Grupo de Linux da Universidade de Aveiro - 2023
 # Visit https://glua.ua.pt or https://www.facebook.com/glua.ua/ for more information about us
 # https://github.com/GLUA-UA/meals-ua
 
@@ -14,15 +14,20 @@
 
 # Made possible by the University of Aveiro's public API
 
-# VERSION 3
+# VERSION 4
 
 # Necessary imports
 import urllib.request as urllib
 import sys, os
 import argparse
 import json
+import requests
+import time
+import threading
 from os.path import expanduser
-from datetime import datetime
+from datetime import datetime, timedelta
+
+done_loading = False
 
 # Get home directory. Works both on Linux and Windows
 home = expanduser("~")
@@ -56,8 +61,60 @@ parser.add_argument('-t', action='store_true', default=False, dest='showTutorial
 # Specifies which zone to display results from
 parser.add_argument('-l', type=int, nargs=1, dest='displayZone',
                     default=1,
-                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, Snack, e AFUAv), 2 - ESTGA, 3 - Restaurante Universitário, 4 - ESAN',
+                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, Grelhados), 2 - ESTGA, 3 - ESAN, 4 - Restaurante Universitário',
                     )
+
+places = {
+    "Campus": [
+        "Santiago",
+        "Crasto",
+        "Grelhados"
+    ],
+    "ESTGA": ["ESTGA"],
+    "ESAN": ["ESAN"],
+    "Restaurante": ["Restaurante Universitário"]
+}
+
+replace = {
+    "Santiago": "Refeitório de Santiago",
+    "Crasto": "Refeitório do Crasto",
+    "ESTGA": "Refeitório da ESTGA",
+    "ESAN": "Refeitório da ESAN"
+}
+
+class Day:
+    def __init__(self, date, place):
+        self.date = date
+        self.place = place
+        self.locations = {}
+
+    def __str__(self):
+        res = bcolors.WARNING + '****************** ' + bcolors.HEADER + bcolors.BOLD + '{: ^22}'.format(self.date.strftime("%a, %d %b %Y")) + bcolors.WARNING + ' ******************\n\n' + bcolors.ENDC # Prints the day properly formatted. The space between the '=' must be 22 characters.
+        for place in places[self.place]:
+            location = replace[place] if place in replace else place
+            res += bcolors.OKBLUE + '================== ' + '{: ^22}'.format(location) + ' ==================\n\n' + bcolors.ENDC # Prints the name of the canteen properly formatted. The space between the '=' must be 22 characters.
+            if place in self.locations:
+                res += str(self.locations[place]["Almoço"])
+                res += str(self.locations[place]["Jantar"])
+            else:
+                res += bcolors.FAIL + "De momento não há informações sobre a ementa neste refeitório" + bcolors.ENDC + "\n\n"
+        return res
+    
+
+class Meal:
+    def __init__(self, period):
+        self.period = period
+        self.soup = ""
+        self.options = []
+
+    def __str__(self):
+        if self.options != []:
+            res = bcolors.UNDERLINE + self.period + '\n' + bcolors.ENDC
+            res += bcolors.WARNING + "Sopa" + bcolors.ENDC + ': ' + bcolors.BOLD +  self.soup.capitalize() + bcolors.ENDC + "\n"
+            for option in self.options:
+                res += bcolors.WARNING + option[0].title() + bcolors.ENDC + ': ' + bcolors.BOLD + option[1].capitalize() + bcolors.ENDC + "\n"
+            return res + "\n"
+        return ""
 
 # Save JSON config file on the user's home directory
 def save_config_file():
@@ -73,7 +130,7 @@ def show_tutorial():
     print("Este script serve para conseguir facilmente consultar as ementas dos vários refeitórios da Universidade de Aveiro.")
     print("Por omissão, são apresentadas as ementas do dia atual nos refeitórios do campus da UA (Santiago, Crasto, e Snack)")
     print("No entanto, pode utilizar o parâmetro " + bcolors.BOLD + "-w" + bcolors.ENDC + " para visualizar as ementas de toda a semana e o parâmetro " + bcolors.BOLD + "-l" + bcolors.ENDC + " para especificar o local a consultar, sendo que:")
-    print(" " + bcolors.BOLD + "-l 1" + bcolors.ENDC + " devolve as ementas no Campus\n " + bcolors.BOLD + "-l 2" + bcolors.ENDC + " devolve as ementas na ESTGA\n " + bcolors.BOLD + "-l 3" + bcolors.ENDC + " devolve as ementas no Restaurante Universitário\n " + bcolors.BOLD + "-l 4" + bcolors.ENDC + " devolve as ementas na ESAN")
+    print(" " + bcolors.BOLD + "-l 1" + bcolors.ENDC + " devolve as ementas no Campus\n " + bcolors.BOLD + "-l 2" + bcolors.ENDC + " devolve as ementas na ESTGA\n "  + bcolors.BOLD + "-l 3" + bcolors.ENDC + " devolve as ementas na ESAN\n " + bcolors.BOLD + "-l 4" + bcolors.ENDC + " devolve as ementas no Restaurante Universitário")
     print("É possível conjugar ambos os parâmetros. Por exemplo, " + bcolors.BOLD + "ementa -w -l 2" + bcolors.ENDC + " devolve todas as ementas da semana correnta na ESTGA")
     print("\nSe ainda não o fez, deveria correr o script 'install.sh' incluído neste diretório.\nDesta forma, poderá executar o programa de forma fácil e sem ter de navegar até ao diretório para onde o descarregou.")
     print("Para o fazer, execute os seguintes comandos:" + bcolors.WARNING + "\nchmod +x install.sh\n./install.sh" + bcolors.ENDC)
@@ -113,75 +170,61 @@ def delete_last_prints(number):
         sys.stdout.write(CURSOR_UP_ONE)
         sys.stdout.write(ERASE_LINE)
 
-
-# Handle an error that happens when there is no meal data for a given place (happens a lot with ESAN)
-def handle_key_error(displayZone):
-    if displayZone == [2]:
-        place="no refeitório da ESTGA"
-    elif displayZone == [3]:
-        place = "no Restaurante Universitário"
-    elif displayZone == [4]:
-        place = "no refeitório da ESAN"
-    else:
-        place = "nos refeitórios do Campus"
-    
-    print(bcolors.WARNING + "De momento não há informações sobre a ementa " + place + "!" + bcolors.ENDC + "\n")
-    sys.exit()
+def animate_loading():
+    i = 0
+    while True:
+        sys.stdout.write('\r' + bcolors.WARNING + 'Por favor aguarde enquanto os serviços da UA processam o pedido' + ("." * i) + (" " * (3-i)) + bcolors.ENDC)
+        i = (i + 1) % 4
+        sys.stdout.flush()
+        time.sleep(0.33)
+        if done_loading:
+            sys.stdout.write('\r' + (' ' * 66))
+            sys.stdout.flush()
+            sys.stdout.write('\r')
+            sys.stdout.flush()
+            break
 
 # Query UA API for meal information and print it on the CLI
 def query_UA_API(place, date):
-    # Try to import xmltodict. If the module is not found, print an error and quit program
-    try:
-        import xmltodict
-    except:
-        print("\nErro! Módulo 'xmltodict' não encontrado! Siga as instruções no README.md para instalar e volte a correr o programa.")
-        print("Ou faça sh ./install.sh no diretório deste ficheiro.")
-        sys.exit()
+    global done_loading
 
     try:
-        file = urllib.urlopen('http://services.web.ua.pt/sas/ementas?date=' + date + '&place=' + place) # open the result of the API as a file
+        today = datetime.combine(datetime.now().date(), datetime.min.time())
+        dates = [today] if date == "day" else [(today + timedelta(days=i)) for i in range(0,7)]
+        info = {d.isoformat(): Day(d, place) for d in dates}
 
-        response = file.read()
-        file.close()
+        url = "https://wso2-gw.ua.pt/mysas_mysas/v1/Refeicoes/GetAgendaMenusEntreDatas?inicio=" + dates[0].date().isoformat() + "&fim=" + dates[-1].date().isoformat()
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept': '*/*'
+        }
 
-        response = xmltodict.parse(response) # Use xmltodict module to parse data from XML to a Python Dict
-        # Sample data: https://codebeautify.org/jsonviewer/cb6c4994
+        t = threading.Thread(target=animate_loading)
+        t.start()
+        response = requests.request("GET", url, headers=headers, data={}).json()
+        done_loading = True
+        t.join()
 
-        try:
-            response = response['result']['menus']['menu'] # Get to the relevent section of the data. 'menu' is an array of objects, each object matches a meal at a certain canteen
-        except KeyError:
-            handle_key_error(args.displayZone)
+        for i in range(len(response)-1):
+            meal = response[i]
+            location = meal["Refeitorios"][0]
+            if location not in info[meal["Data"]].locations:
+                info[meal["Data"]].locations[location] = {"Almoço": Meal("Almoço"), "Jantar": Meal("Jantar")}
+            for component in meal["Componentes"]:
+                if component["TipoString"] == "Sopa":
+                    info[meal["Data"]].locations[location][meal["Periodo"]].soup = component["Nome"]
+                else:
+                    info[meal["Data"]].locations[location][meal["Periodo"]].options.append((meal["Nome"], component["Nome"]))
 
-        data = response
-        if not isinstance(response, list):
-            data = [1]
-            data[0] = response
-
-        last_date = ""
-        # Iterate through the array of meals
-        for i in range(len(data)): 
-            if data[i]['@date'] != last_date and data[i]['@meal'] == 'Almoço':
-                last_date = data[i]['@date']
-                print(bcolors.WARNING + '****************** ' + bcolors.HEADER + bcolors.BOLD + '{: ^22}'.format(data[i]['@date'][:-15]) + bcolors.WARNING + ' ******************\n' + bcolors.ENDC) # Prints the day properly formatted. The space between the '=' must be 22 characters.
-            if data[i]['@meal'] == 'Almoço': # Each canteen can serve 2 meals (Lunch, Dinner). If the current meal is Lunch, print the name of the canteen
-                print(bcolors.OKBLUE + '================== ' + '{: ^22}'.format(data[i]['@canteen']) + ' ==================\n' + bcolors.ENDC) # Prints the name of the canteen properly formatted. The space between the '=' must be 22 characters.
-
-            print(bcolors.UNDERLINE + data[i]['@meal'] + '\n' + bcolors.ENDC) # Print what meal it is, i.e. Lunch or Dinner
-
-            if data[i]['@disabled'] == '0': # If the meal is not 'disabled', in other words, if the canteen is in fact serving this meal
-                # Iterate through all the diffent options on the menu
-                for x in range(len(data[i]['items']['item'])):
-                    if '#text' in data[i]['items']['item'][x]: # If the option name has a corresponding value (food), print both the name and the value
-                        print(bcolors.WARNING + data[i]['items']['item'][x]['@name'] + bcolors.ENDC + ': ' + bcolors.BOLD +  data[i]['items']['item'][x]['#text'] + bcolors.ENDC)
-
-            else:
-                print(bcolors.FAIL + data[i]['@disabled'] + bcolors.ENDC) # If the meal is 'disabled', print the disable message included in the data
-        
-            print()
+        for day in dates:
+            print(info[day.isoformat()], end="")
 
     except:
         # Error has occured, print error message
-        print(bcolors.FAIL + "Ocorreu um erro ao obter a informação das ementas na UA!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC)
+        done_loading = True
+        t.join()
+        print(bcolors.FAIL + "Ocorreu um erro ao obter a informação das ementas na UA!\n  Por favor tente novamente. Se o erro persistir contacte o GLUA." + bcolors.ENDC + "\n")
 
 
 # Scrap and print data from AFUAv's facebook page, where they regularly post the menu 
@@ -237,7 +280,7 @@ def query_AFUAv(hour):
 def main():
     print(bcolors.OKGREEN + '\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n' + bcolors.ENDC + bcolors.BOLD +
         '                       Ementas na UA\n' + bcolors.ENDC + bcolors.OKGREEN + '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' + bcolors.ENDC)
-    print('By GLUA - Grupo de Linux da Universidade de Aveiro\n')
+    print('By Grupo de Linux da Universidade de Aveiro (glua.ua.pt)\n')
 
     # Get arguments
     global args
@@ -249,37 +292,35 @@ def main():
 
     check_config()  
 
-    if not internet_on():  # If there is no internet print errors
-        print(bcolors.FAIL +
-            '=========================== ERRO ===========================' + bcolors.ENDC)
-        print(bcolors.FAIL + 'Não existe conexão à internet.\nEste script necessita de uma ligação estável à internet para aceder ao API da UA.\n' + bcolors.ENDC)
+    #if not internet_on():  # If there is no internet print errors
+    #    print(bcolors.FAIL +
+    #        '=========================== ERRO ===========================' + bcolors.ENDC)
+    #    print(bcolors.FAIL + 'Não existe conexão à internet.\nEste script necessita de uma ligação estável à internet para aceder ao API da UA.\n' + bcolors.ENDC)
 
+    if args.showWeek:
+        date = "week"
     else:
-        
-        if args.showWeek:
-            date = "week"
-        else:
-            date = "day"
+        date = "day"
 
-        if args.displayZone == [2]:
-            place="ESTGA"
-        elif args.displayZone == [3]:
-            place = "rest"
-        elif args.displayZone == [4]:
-            place = "ESAN"
-        else:
-            # UA's Main Campus
-            place = "santiago"
+    if args.displayZone == [2]:
+        place="ESTGA"
+    elif args.displayZone == [3]:
+        place = "ESAN"
+    elif args.displayZone == [4]:
+        place = "Restaurante"
+    else:
+        # UA's Main Campus
+        place = "Campus"
 
-        # Query and print UA API data for selected location and time period
-        query_UA_API(place, date)
+    # Query and print UA API data for selected location and time period
+    query_UA_API(place, date)
 
-        # Query and print AFUAv data (only for UA's main campus and for the same day)
-        if(place == "santiago" and date == "day"):
-            now = datetime.now().hour
-            query_AFUAv(now)
+    # Query and print AFUAv data (only for UA's main campus and for the same day)
+    #if(place == "santiago" and date == "day"):
+    #    now = datetime.now().hour
+    #    query_AFUAv(now)
 
-        print(bcolors.UNDERLINE + '\nBom Apetite!\n' + bcolors.ENDC)
+    print(bcolors.UNDERLINE + 'Bom Apetite!\n' + bcolors.ENDC)
 
 if __name__ == "__main__":
 	main()
