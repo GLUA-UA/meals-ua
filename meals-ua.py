@@ -61,8 +61,8 @@ parser.add_argument('-t', action='store_true', default=False, dest='showTutorial
 
 # Specifies which zone to display results from
 parser.add_argument('-l', type=int, nargs=1, dest='displayZone',
-                    default=5,
-                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, Grelhados), 2 - ESTGA, 3 - ESAN, 4 - Restaurante Universitário, 5 - Restaurante Vegetariano',
+                    default=[1],
+                    help='Especifica os refeitórios a apresentar: 1 - Campus (Santiago, Crasto, Grelhados), 2 - ESTGA, 3 - ESAN, 4 - Restaurante Universitário, 5 - Restaurante Vegetariano, 6 - TrêsDê',
                     )
 
 places = {
@@ -74,7 +74,8 @@ places = {
     "ESTGA": ["ESTGA"],
     "ESAN": ["ESAN"],
     "Restaurante": ["Restaurante Universitário"],
-    "Vegetariano" : ["Vegetariano", "Restaurante Vegetariano"]
+    "Vegetariano": ["Vegetariano", "Restaurante Vegetariano"],
+    "TrêsDê": ["TrêsDê"]
 }
 
 replace = {
@@ -251,8 +252,6 @@ def query_CMS(place, date):
     for canteen in canteens:
         # Get the caption of the table (the name of the canteen)
         caption = canteen.find('caption').text.split(': ')[1]
-        if (caption != "Restaurante Vegetariano"):
-            continue
         # Get the meals of the canteen
         meals = canteen.find_all('tr')
 
@@ -274,7 +273,7 @@ def query_CMS(place, date):
             header = header.strip().split(' ')
 
             # Get the meal date and whether it is lunch or dinner
-            if (caption == 'Restaurante Vegetariano'):
+            if (caption == 'Restaurante Vegetariano' or caption == "TrêsDê"):
                 lunchOrDinner = 'Almoço'
             else:
                 lunchOrDinner = header[0]
@@ -287,10 +286,8 @@ def query_CMS(place, date):
             if lunchOrDinner != 'Almoço' and lunchOrDinner != 'Jantar':
                 # Get the meal options
                 meal_name = meal.find('td', {'class': 'views-field views-field-body'})
-                if (caption != "TrêsDê"):
-                    items = meal_name.find_all('p')
-                else:
-                    items = meal_name.find_all('li')
+                items = meal_name.find_all('p')
+
                 
                 if (not items):
                     continue
@@ -325,7 +322,10 @@ def query_CMS(place, date):
 
             # Get the meal options
             meal_name = meal.find('td', {'class': 'views-field views-field-body'})
-            items = meal_name.find_all('p')
+            if (caption == "TrêsDê"):
+                items = meal_name.find_all('li')
+            else:
+                items = meal_name.find_all('p')
 
             if lunchOrDinner not in menu[caption][meal_date]:
                 menu[caption][meal_date][lunchOrDinner] = {}
@@ -349,10 +349,22 @@ def query_CMS(place, date):
                         plate_name = f'Opção Buffet {num_plate}'
                         plate_description = plate
                     num_plate += 1
+                elif (caption == "TrêsDê"):
+                    num_plate += 1
+                    if(num_plate < 4):
+                        plate_name = f'Prato {num_plate}'
+                        plate_description = plate
+                    elif(num_plate < 6):
+                        plate_name = f'Sobremesa {num_plate-3}'
+                        plate_description = plate
+                    elif(num_plate == 6):
+                        plate_name = 'Bebida'
+                        plate_description = plate
+                    else:
+                        plate_name = 'Saladas'
+                        plate_description = plate
                 else:
                     plate_name, plate_description = parse_plate(plate)
-                print(plate_name)
-                print(plate_description)
 
                 # Add the meal option to the menu
                 menu[caption][meal_date][lunchOrDinner][plate_name] = plate_description
@@ -361,16 +373,20 @@ def query_CMS(place, date):
     printDates = []
 
     # Print the menu
-    if place == 'campus':
+    if place == 'Campus':
         printCanteens.append('Santiago')
         printCanteens.append('Crasto')
         printCanteens.append('Grelhados')
+        printCanteens.append('Restaurante Vegetariano')
+        printCanteens.append('TrêsDê')
     elif place == 'estga':
         printCanteens.append('ESTGA')
     elif place == 'rest': 
         printCanteens.append('Restaurante Universitário')
     elif place == 'vegetariano':
         printCanteens.append('Restaurante Vegetariano')
+    elif place == 'TrêsDê':
+        printCanteens.append('TrêsDê')
 
     # if place == 'vegetariano':
     #     printCanteens.append('Restaurante Vegetariano')
@@ -502,14 +518,16 @@ def main():
     else:
         date = "day"
 
-    if args.displayZone == 2:
+    if args.displayZone[0] == 2:
         place="ESTGA"
-    elif args.displayZone == 3:
+    elif args.displayZone[0] == 3:
         place = "ESAN"
-    elif args.displayZone == 4:
+    elif args.displayZone[0] == 4:
         place = "Restaurante"
-    elif args.displayZone == 5:
+    elif args.displayZone[0] == 5:
         place = "vegetariano"
+    elif args.displayZone[0] == 6:
+        place = "TrêsDê"
     else:
         # UA's Main Campus
         place = "Campus"
