@@ -173,6 +173,24 @@ def delete_last_prints(number):
         sys.stdout.write(CURSOR_UP_ONE)
         sys.stdout.write(ERASE_LINE)
 
+def handle_key_error(displayZone):
+    if displayZone == [2]:
+        place="no refeitório da ESTGA"
+    elif displayZone == [3]:
+        place = "no Restaurante Universitário"
+    elif displayZone == [4]:
+        place = "no refeitório da ESTGA"
+    elif displayZone == [5]:
+        place = "no restaurante vegetariano"
+    elif displayZone == [6]:
+        place = "no TrêsDê"
+    else:
+        place = "nos refeitórios do Campus"
+    
+    print(bcolors.WARNING + "De momento não há informações sobre a ementa " + place + "!" + bcolors.ENDC + "\n")
+    sys.exit()
+
+
 def animate_loading():
     i = 0
     while True:
@@ -252,7 +270,6 @@ def query_CMS(place, date):
     for canteen in canteens:
         # Get the caption of the table (the name of the canteen)
         caption = canteen.find('caption').text.split(': ')[1]
-        print(caption)
         if(caption in ['Crasto', 'Santiago', 'Grelhados', 'ESTGA']):
             continue
         # Get the meals of the canteen
