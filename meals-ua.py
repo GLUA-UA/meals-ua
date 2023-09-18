@@ -252,6 +252,9 @@ def query_CMS(place, date):
     for canteen in canteens:
         # Get the caption of the table (the name of the canteen)
         caption = canteen.find('caption').text.split(': ')[1]
+        print(caption)
+        if(caption in ['Crasto', 'Santiago', 'Grelhados', 'ESTGA']):
+            continue
         # Get the meals of the canteen
         meals = canteen.find_all('tr')
 
@@ -533,7 +536,7 @@ def main():
         place = "Campus"
 
     # Query and print UA API data for selected location and time period
-    # query_UA_API(place, date)
+    query_UA_API(place, date)
     query_CMS(place, date)
 
     # Query and print AFUAv data (only for UA's main campus and for the same day)
